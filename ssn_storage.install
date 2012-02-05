@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * Installation file for the ssn_storage module.
+ */
+
+/**
  * Implements hook_field_schema().
  */
 function ssn_storage_field_schema($field) {

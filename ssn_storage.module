@@ -28,7 +28,7 @@ function ssn_storage_field_validate($entity_type, $entity, $field, $instance, $l
       ->fieldCondition($field['field_name'], 'ssn', $items[0]['ssn'], '=' )
       ->execute();
 
-    if(!empty($result)) {
+    if (!empty($result)) {
       $errors[$field['field_name']][$langcode][$delta][] = array(
         'error' => 'ssn_storage_invalid',
         'message' => t('This social is already in use.'),
@@ -53,11 +53,11 @@ function ssn_storage_field_formatter_info() {
     // This formatter just displays the hex value in the color indicated.
     'ssn_storage_format' => array(
       'label' => t('Last 4 Digits'),
-      'field types' => array('ssn_storage_ssn','ssn_storage_last4'),
+      'field types' => array('ssn_storage_ssn', 'ssn_storage_last4'),
     ),
     'ssn_storage_format_hidden' => array(
       'label' => t('Last 4 Digits with hidden'),
-      'field types' => array('ssn_storage_ssn','ssn_storage_last4'),
+      'field types' => array('ssn_storage_ssn', 'ssn_storage_last4'),
     ),
 
   );
@@ -85,7 +85,7 @@ function ssn_storage_field_formatter_view($entity_type, $entity, $field, $instan
         $element[$delta] = array(
           '#type' => 'html_tag',
           '#tag' => 'p',
-          '#value' => t('@last4', array('@last4' => '***-**-'.$item['last4'])),
+          '#value' => t('@last4', array('@last4' => '***-**-' . $item['last4'])),
         );
       }
       break;
@@ -101,7 +101,7 @@ function ssn_storage_field_widget_info() {
   return array(
     'ssn_storage_text' => array(
       'label' => t('Social Security Number'),
-      'field types' => array('ssn_storage_ssn','ssn_storage_last4'),
+      'field types' => array('ssn_storage_ssn', 'ssn_storage_last4'),
     ),
   );
 }
@@ -150,14 +150,14 @@ function ssn_storage_widget_validate($element, &$form_state) {
   
   
   if (isset($form_state['values'][$field_name][$element['#language']][$delta]['ssn'])) {
-    $social = preg_replace('/[^\d]/','', $form_state['values'][$field_name][$element['#language']][$delta]['ssn']);
-    $last4 = substr($social,-4);
+    $social = preg_replace('/[^\d]/', '', $form_state['values'][$field_name][$element['#language']][$delta]['ssn']);
+    $last4 = substr($social, -4);
     // dead code with addition of #access
-    if(strcmp($element['#default_value'], $last4) == 0 ||  strlen($form_state['values'][$field_name][$element['#language']][$delta]['ssn']) == 4) {
+    if (strcmp($element['#default_value'], $last4) == 0 ||  strlen($form_state['values'][$field_name][$element['#language']][$delta]['ssn']) == 4) {
       return;
     }
     // so we can edit content types without an error?
-    if(strlen($form_state['values'][$field_name][$element['#language']][$delta]['ssn']) == 0) {
+    if (strlen($form_state['values'][$field_name][$element['#language']][$delta]['ssn']) == 0) {
       return;
     }
 
@@ -166,7 +166,7 @@ function ssn_storage_widget_validate($element, &$form_state) {
     }
     
     // save hash of ssn for unique validation
-    $value = hash('sha512',drupal_get_hash_salt().$social);
+    $value = hash('sha512', drupal_get_hash_salt() . $social);
     form_set_value($element, $value, $form_state);
     
     // save last4 of social for display
