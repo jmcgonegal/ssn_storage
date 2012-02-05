@@ -29,7 +29,7 @@ function ssn_storage_field_validate($entity_type, $entity, $field, $instance, $l
     $query = new EntityFieldQuery();
 
     $result = $query
-      ->fieldCondition($field['field_name'], 'ssn', $items[0]['ssn'], '=' )
+      ->fieldCondition($field['field_name'], 'ssn', $items[0]['ssn'], '=')
       ->execute();
 
     if (!empty($result)) {
@@ -73,7 +73,7 @@ function ssn_storage_field_formatter_view($entity_type, $entity, $field, $instan
   $element = array();
 
   switch ($display['type']) {
-  
+
     case 'ssn_storage_format':
       foreach ($items as $delta => $item) {
         $element[$delta] = array(
@@ -83,7 +83,7 @@ function ssn_storage_field_formatter_view($entity_type, $entity, $field, $instan
         );
       }
       break;
-      
+
     case 'ssn_storage_format_hidden':
       foreach ($items as $delta => $item) {
         $element[$delta] = array(
@@ -121,10 +121,10 @@ function ssn_storage_field_widget_form(&$form, &$form_state, $field, $instance, 
   switch ($instance['widget']['type']) {
 
     case 'ssn_storage_text':
-      $widget +=  array(
+      $widget += array(
         '#type' => 'textfield',
         '#default_value' => $value,
-        // hide wiget if ssn is set
+        // Hide wiget if ssn is set.
         '#access' => !isset($items[$delta]['last4']),
 
         '#size' => 12,
@@ -147,33 +147,32 @@ function ssn_storage_field_widget_form(&$form, &$form_state, $field, $instance, 
  */
 function ssn_storage_widget_validate($element, &$form_state) {
 
-  // find out which element
-  $delta = $element['#delta']; 
+  // Find out which element.
+  $delta = $element['#delta'];
   $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
   $field_name = $field['field_name'];
-  
-  
+
   if (isset($form_state['values'][$field_name][$element['#language']][$delta]['ssn'])) {
     $social = preg_replace('/[^\d]/', '', $form_state['values'][$field_name][$element['#language']][$delta]['ssn']);
     $last4 = substr($social, -4);
-    // dead code with addition of #access
+    // Dead code with addition of #access.
     if (strcmp($element['#default_value'], $last4) == 0 ||  strlen($form_state['values'][$field_name][$element['#language']][$delta]['ssn']) == 4) {
       return;
     }
-    // so we can edit content types without an error?
+    // So we can edit content types without an error?
     if (strlen($form_state['values'][$field_name][$element['#language']][$delta]['ssn']) == 0) {
       return;
     }
 
-    if (strlen($social)!=9) {
+    if (strlen($social) != 9) {
       form_error($element, t("Not a valid SSN"));
     }
-    
-    // save hash of ssn for unique validation
+
+    // Save hash of ssn for unique validation.
     $value = hash('sha512', drupal_get_hash_salt() . $social);
     form_set_value($element, $value, $form_state);
-    
-    // save last4 of social for display
+
+    // Save last4 of social for display.
     $element['#parents'][3] = 'last4';
     form_set_value($element, $last4, $form_state);
   }
