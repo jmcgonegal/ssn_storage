@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Installation file for the ssn_storage module.
+ */
 
 /**
  * Implements hook_field_info().
@@ -22,7 +26,7 @@ function ssn_storage_field_info() {
  */
 function ssn_storage_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   foreach ($items as $delta => $item) {
-    $query = new EntityFieldQuery;
+    $query = new EntityFieldQuery();
 
     $result = $query
       ->fieldCondition($field['field_name'], 'ssn', $items[0]['ssn'], '=' )
@@ -50,14 +54,13 @@ function ssn_storage_field_is_empty($item, $field) {
  */
 function ssn_storage_field_formatter_info() {
   return array(
-    // This formatter just displays the hex value in the color indicated.
     'ssn_storage_format' => array(
       'label' => t('Last 4 Digits'),
-      'field types' => array('ssn_storage_ssn', 'ssn_storage_last4'),
+      'field types' => array('ssn_storage_last4'),
     ),
     'ssn_storage_format_hidden' => array(
       'label' => t('Last 4 Digits with hidden'),
-      'field types' => array('ssn_storage_ssn', 'ssn_storage_last4'),
+      'field types' => array('ssn_storage_last4'),
     ),
 
   );
@@ -80,6 +83,7 @@ function ssn_storage_field_formatter_view($entity_type, $entity, $field, $instan
         );
       }
       break;
+      
     case 'ssn_storage_format_hidden':
       foreach ($items as $delta => $item) {
         $element[$delta] = array(

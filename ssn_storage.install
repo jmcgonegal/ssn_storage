@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Installation file for the ssn_storage module.
+ * Schema installation file for the ssn_storage module.
  */
 
 /**
