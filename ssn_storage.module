@@ -1,0 +1,187 @@
+<?php
+
+/**
+ * Implements hook_field_info().
+ *
+ * Provides the description of the field.
+ */
+function ssn_storage_field_info() {
+  return array(
+    // We name our field as the associative name of the array.
+    'ssn_storage_ssn' => array(
+      'label' => t('Social Security Number'),
+      'description' => t('A valid social security number'),
+      'default_widget' => 'ssn_storage_widget',
+      'default_formatter' => 'ssn_storage_format',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_validate().
+ */
+function ssn_storage_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  foreach ($items as $delta => $item) {
+    $query = new EntityFieldQuery;
+
+    $result = $query
+      ->fieldCondition($field['field_name'], 'ssn', $items[0]['ssn'], '=' )
+      ->execute();
+
+    if(!empty($result)) {
+      $errors[$field['field_name']][$langcode][$delta][] = array(
+        'error' => 'ssn_storage_invalid',
+        'message' => t('This social is already in use.'),
+      );
+    }
+  }
+}
+
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function ssn_storage_field_is_empty($item, $field) {
+  return empty($item['ssn']);
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function ssn_storage_field_formatter_info() {
+  return array(
+    // This formatter just displays the hex value in the color indicated.
+    'ssn_storage_format' => array(
+      'label' => t('Last 4 Digits'),
+      'field types' => array('ssn_storage_ssn','ssn_storage_last4'),
+    ),
+    'ssn_storage_format_hidden' => array(
+      'label' => t('Last 4 Digits with hidden'),
+      'field types' => array('ssn_storage_ssn','ssn_storage_last4'),
+    ),
+
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function ssn_storage_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  switch ($display['type']) {
+  
+    case 'ssn_storage_format':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array(
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => t('@last4', array('@last4' => $item['last4'])),
+        );
+      }
+      break;
+    case 'ssn_storage_format_hidden':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array(
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => t('@last4', array('@last4' => '***-**-'.$item['last4'])),
+        );
+      }
+      break;
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function ssn_storage_field_widget_info() {
+  return array(
+    'ssn_storage_text' => array(
+      'label' => t('Social Security Number'),
+      'field types' => array('ssn_storage_ssn','ssn_storage_last4'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function ssn_storage_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $value = isset($items[$delta]['last4']) ? $items[$delta]['last4'] : '';
+
+  $widget = $element;
+  $widget['#delta'] = $delta;
+  switch ($instance['widget']['type']) {
+
+    case 'ssn_storage_text':
+      $widget +=  array(
+        '#type' => 'textfield',
+        '#default_value' => $value,
+        // hide wiget if ssn is set
+        '#access' => !isset($items[$delta]['last4']),
+
+        '#size' => 12,
+        '#maxlength' => 16,
+        '#element_validate' => array('ssn_storage_widget_validate'),
+      );
+
+      break;
+
+  }
+
+  $element['ssn'] = $widget;
+  return $element;
+}
+
+
+/**
+ * Validate the individual fields and then convert them into a single HTML ssn
+ * value as text.
+ */
+function ssn_storage_widget_validate($element, &$form_state) {
+
+  // find out which element
+  $delta = $element['#delta']; 
+  $field = $form_state['field'][$element['#field_name']][$element['#language']]['field'];
+  $field_name = $field['field_name'];
+  
+  
+  if (isset($form_state['values'][$field_name][$element['#language']][$delta]['ssn'])) {
+    $social = preg_replace('/[^\d]/','', $form_state['values'][$field_name][$element['#language']][$delta]['ssn']);
+    $last4 = substr($social,-4);
+    // dead code with addition of #access
+    if(strcmp($element['#default_value'], $last4) == 0 ||  strlen($form_state['values'][$field_name][$element['#language']][$delta]['ssn']) == 4) {
+      return;
+    }
+    // so we can edit content types without an error?
+    if(strlen($form_state['values'][$field_name][$element['#language']][$delta]['ssn']) == 0) {
+      return;
+    }
+
+    if (strlen($social)!=9) {
+      form_error($element, t("Not a valid SSN"));
+    }
+    
+    // save hash of ssn for unique validation
+    $value = hash('sha512',drupal_get_hash_salt().$social);
+    form_set_value($element, $value, $form_state);
+    
+    // save last4 of social for display
+    $element['#parents'][3] = 'last4';
+    form_set_value($element, $last4, $form_state);
+  }
+}
+
+/**
+ * Implements hook_field_widget_error().
+ */
+function ssn_storage_field_widget_error($element, $error, $form, &$form_state) {
+  switch ($error['error']) {
+    case 'ssn_storage_invalid':
+      form_error($element, $error['message']);
+      break;
+  }
+}

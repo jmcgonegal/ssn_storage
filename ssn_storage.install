@@ -1,0 +1,17 @@
+<?php
+/**
+ * Implements hook_field_schema().
+ */
+function ssn_storage_field_schema($field) {
+  $columns = array(
+    'ssn' => array('type' => 'varchar', 'length' => 128, 'not null' => FALSE),
+    'last4' => array('type' => 'int', 'size' => 'small', 'not null' => FALSE),
+  );
+  $indexes = array(
+    'ssn' => array('ssn'),
+  );
+  return array(
+    'columns' => $columns,
+    'indexes' => $indexes,
+  );
+}

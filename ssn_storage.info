@@ -1,0 +1,4 @@
+name = Social Security Field
+description = Stores a unique SSN in a hashed field and stores the last 4 for display
+
+core = 7.x
